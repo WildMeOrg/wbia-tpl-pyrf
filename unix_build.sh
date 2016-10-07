@@ -34,7 +34,7 @@ make -j$NCPUS -w
 #################################
 if [[ '$OSTYPE' == 'darwin'* ]]; then
     echo 'Fixing OSX libiomp'
-    install_name_tool -change libiomp5.dylib ~/code/libomp_oss/exports/mac_32e/lib.thin/libiomp5.dylib lib*
+    # install_name_tool -change libiomp5.dylib /opt/local/lib/libomp/libiomp5.dylib lib*
 fi
 #################################
 echo 'Moving the shared library'
