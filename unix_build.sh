@@ -37,10 +37,11 @@ fi
 
 
 # Use Virtual Env OpenCV if available
+echo "LOCAL_PREFIX=$LOCAL_PREFIX"
 
 if [[ "$IN_VENV" -eq "True" ]]; then
     export OpenCV_Dir="$LOCAL_PREFIX/share/OpenCV"
-    if [ -d "$VENV_OpenCV_Dir" ]; then
+    if [ -d "$OpenCV_Dir" ]; then
         export CONFIG=" $CONFIG -DOpenCV_DIR='$OpenCV_Dir'"
     fi
 fi
@@ -72,7 +73,7 @@ if [[ $MAKE_EXITCODE == 0 ]]; then
     #cp lib* ../pyrf
     cp -v lib* ../pyrf
 else
-    export FAILCMD='{ echo "FAILED PYRF BUILD" ; exit 1; }'
+    FAILCMD='echo "FAILED PYRF BUILD" ; exit 1;'
     $FAILCMD
 fi
 
