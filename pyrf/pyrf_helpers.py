@@ -7,10 +7,19 @@ import cv2
 import random
 import numpy as np
 import ctypes as C
-import utool as ut
+import sys
 import detecttools.ctypes_interface as ctypes_interface
+import utool as ut
 
 ut.noinject(__name__, '[pyrf_helpers]')
+
+
+def ensure_bytes_strings(str_list):
+    # converts python3 strings into bytes
+    if sys.hexversion > 0x03000000:
+        return [str_ if not isinstance(str_, str) else bytes(str_, 'utf-8') for str_ in str_list]
+    else:
+        return str_list
 
 
 def _cast_list_to_c(py_list, dtype):
@@ -70,8 +79,7 @@ def _load_c_shared_library(METHODS):
     return rf_clib
 
 
-def _cache_data(src_path_list, dst_path, format_str='data_%07d.JPEG',
-                **kwargs):
+def _cache_data(src_path_list, dst_path, format_str='data_%07d.JPEG', **kwargs):
     """
     Args:
         src_path_list                    (required)
@@ -92,6 +100,9 @@ def _cache_data(src_path_list, dst_path, format_str='data_%07d.JPEG',
             print("Processing %r" % (src_path, ))
         # Load the iamge
         image = cv2.imread(src_path)
+        if image is None:
+            print('\t[WARNING] Cannot load image file, skipping image')
+            continue
         # Get the shape of the iamge
         height_, width_, channels_ = image.shape
         # Determine new image size
@@ -112,7 +123,7 @@ def _cache_data(src_path_list, dst_path, format_str='data_%07d.JPEG',
             height = height_
         # Check for patch size limitation
         if width < kwargs['patch_width'] or height < kwargs['patch_height']:
-            print('\t[WARNING] Image size is too small for the patch size, skipping image ')
+            print('\t[WARNING] Image size is too small for the patch size, skipping image')
             continue
         # Resize the image
         image_ = cv2.resize(image, (width, height), interpolation=cv2.INTER_LANCZOS4)
