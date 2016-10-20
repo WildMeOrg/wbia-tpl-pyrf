@@ -8,28 +8,15 @@
 #rm -rf cmake_install.cmake
 python2.7 -c "import utool as ut; print('keeping build dir' if ut.get_argflag(('--fast', '--no-rmbuild')) else ut.delete('build'))" $@
 
+#TODO: use default python 2.7 or 3.
+# Whatever the default is in the virtualenv
+
 
 #################################
 echo 'Creating new build'
 mkdir -p build
 cd build
 #################################
-
-export PYEXE=$(which python2.7)
-if [[ "$VIRTUAL_ENV" == ""  ]]; then
-    export LOCAL_PREFIX=/usr/local
-    export _SUDO="sudo"
-else
-    export LOCAL_PREFIX=$($PYEXE -c "import sys; print(sys.prefix)")/local
-    export _SUDO=""
-fi
-
-echo 'Configuring with cmake'
-if [[ '$OSTYPE' == 'darwin'* ]]; then
-    export CONFIG="-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_C_COMPILER=clang2 -DCMAKE_CXX_COMPILER=clang2++ -DCMAKE_INSTALL_PREFIX=$LOCAL_PREFIX -DOpenCV_DIR=$LOCAL_PREFIX/share/OpenCV"
-else
-    export CONFIG="-DCMAKE_BUILD_TYPE='Release' -DCMAKE_INSTALL_PREFIX=$LOCAL_PREFIX -DOpenCV_DIR=$LOCAL_PREFIX/share/OpenCV"
-fi
 
 
 export PYEXE=$(which python2.7)
@@ -38,11 +25,15 @@ echo "IN_VENV = $IN_VENV"
 
 if [[ "$IN_VENV" -eq "True" ]]; then
     export LOCAL_PREFIX=$($PYEXE -c "import sys; print(sys.prefix)")/local
-    #export _SUDO=""
 else
-#if [[ "$VIRTUAL_ENV" == ""  ]]; then
     export LOCAL_PREFIX=/usr/local
-    #export _SUDO="sudo"
+fi
+
+echo 'Configuring with cmake'
+if [[ '$OSTYPE' == 'darwin'* ]]; then
+    export CONFIG="-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_C_COMPILER=clang2 -DCMAKE_CXX_COMPILER=clang2++ -DCMAKE_INSTALL_PREFIX=$LOCAL_PREFIX"
+else
+    export CONFIG="-DCMAKE_BUILD_TYPE='Release' -DCMAKE_INSTALL_PREFIX=$LOCAL_PREFIX"
 fi
 
 
@@ -55,8 +46,6 @@ if [[ "$IN_VENV" -eq "True" ]]; then
         export CONFIG=" $CONFIG -DOpenCV_DIR='$OpenCV_Dir'"
     fi
 fi
-
-# install_name_tool -change libiomp5.dylib ~/code/libomp_oss/exports/mac_32e/lib.thin/libiomp5.dylib lib*
 
 echo "CONFIG = $CONFIG"
 
@@ -73,18 +62,17 @@ else
 fi
 
 #################################
-echo 'Fixing OSX libiomp'
-install_name_tool -change libiomp5.dylib ~/code/libomp_oss/exports/mac_32e/lib.thin/libiomp5.dylib lib*
+if [[ '$OSTYPE' == 'darwin'* ]]; then
+    echo 'Fixing OSX libiomp'
+    install_name_tool -change libiomp5.dylib ~/code/libomp_oss/exports/mac_32e/lib.thin/libiomp5.dylib lib*
+fi
 #################################
 
 export MAKE_EXITCODE=$?
 echo "MAKE_EXITCODE=$MAKE_EXITCODE"
 
 if [[ $MAKE_EXITCODE == 0 ]]; then
-    #make VERBOSE=1
     echo 'Moving the shared library'
-    #cp -v libhesaff* ../pyhesaff
-    #cp lib* ../pyrf
     cp -v lib* ../pyrf
 else
     FAILCMD='echo "FAILED PYRF BUILD" ; exit 1;'
