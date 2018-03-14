@@ -26,7 +26,13 @@ if [[ '$OSTYPE' == 'darwin'* ]]; then
 else
     export CONFIG="-DCMAKE_BUILD_TYPE='Release' -DCMAKE_INSTALL_PREFIX=$LOCAL_PREFIX -DOpenCV_DIR=$LOCAL_PREFIX/share/OpenCV"
 fi
-cmake $CONFIG -G 'Unix Makefiles' ..
+cmake $CONFIG -G 'Unix Makefiles' \
+    -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS}" \
+    -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="${CMAKE_SHARED_LINKER_FLAGS}" \
+    -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
+    ..
+
 #################################
 echo 'Building with make'
 export NCPUS=$(grep -c ^processor /proc/cpuinfo)
