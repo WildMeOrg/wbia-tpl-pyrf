@@ -48,6 +48,12 @@ if [[ "$IN_VENV" -eq "True" ]]; then
 fi
 
 echo "CONFIG = $CONFIG"
+cmake $CONFIG -G 'Unix Makefiles' \
+    -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS}" \
+    -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="${CMAKE_SHARED_LINKER_FLAGS}" \
+    -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}" \
+    ..
 
 #################################
 echo 'Building with make'
@@ -64,7 +70,8 @@ fi
 #################################
 if [[ '$OSTYPE' == 'darwin'* ]]; then
     echo 'Fixing OSX libiomp'
-    install_name_tool -change libiomp5.dylib ~/code/libomp_oss/exports/mac_32e/lib.thin/libiomp5.dylib lib*
+    # install_name_tool -change libiomp5.dylib ~/code/libomp_oss/exports/mac_32e/lib.thin/libiomp5.dylib lib*
+    install_name_tool -change libiomp5.dylib /opt/local/lib/libomp/libiomp5.dylib lib*
 fi
 #################################
 
