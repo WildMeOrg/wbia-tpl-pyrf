@@ -5,8 +5,8 @@ from pyrf import Random_Forest_Detector
 import utool
 
 
-TEST_DATA_DETECT_URL = 'https://cthulhu.dyn.wildme.io/public/data/testdata_detect.zip'
-TEST_DATA_MODEL_URL = 'https://cthulhu.dyn.wildme.io/public/models/rf.zip'
+TEST_DATA_DETECT_URL = 'https://wildbookiarepository.blob.core.windows.net/data/testdata_detect.zip'
+TEST_DATA_MODEL_URL = 'https://wildbookiarepository.blob.core.windows.net/models/rf.zip'
 
 
 def test_pyrf():

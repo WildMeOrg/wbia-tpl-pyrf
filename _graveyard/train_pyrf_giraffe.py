@@ -219,7 +219,7 @@ def train_pyrf():
     )
 
     # Use pre-trained trees?
-    TEST_DATA_MODEL_URL = 'https://cthulhu.dyn.wildme.io/public/models/rf.zip'
+    TEST_DATA_MODEL_URL = 'https://wildbookiarepository.blob.core.windows.net/models/rf.zip'
     models_path = utool.grab_zipped_url(TEST_DATA_MODEL_URL, appname='utool')
     trees_path = join(models_path, category)
 
