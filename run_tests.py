@@ -5,8 +5,8 @@ from pyrf import Random_Forest_Detector
 import utool as ut
 
 
-TEST_DATA_DETECT_URL = 'https://wildbookiarepository.blob.core.windows.net/data/testdata_detect.zip'
-TEST_DATA_MODEL_URL = 'https://wildbookiarepository.blob.core.windows.net/models/rf.zip'
+TEST_DATA_DETECT_URL = 'https://wildbookiarepository.azureedge.net/data/testdata_detect.zip'
+TEST_DATA_MODEL_URL = 'https://wildbookiarepository.azureedge.net/models/rf.zip'
 
 
 # Parallel code for resizing many images
