@@ -506,7 +506,7 @@ class Random_Forest_Detector(object):
                 if not params['quiet']:
                     print('[pyrf py] Detecting with %d CPUs' % (cpu_count, ))
                 params['batch_size'] = cpu_count
-            except:
+            except Exception:
                 params['batch_size'] = 8
 
         # To eleminate downtime, add 1 to batch_size
