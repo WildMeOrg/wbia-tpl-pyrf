@@ -2,8 +2,8 @@
 from __future__ import absolute_import, division, print_function
 from os.path import join, split, isdir
 from pyrf import Random_Forest_Detector
-from detecttools.directory import Directory
-from detecttools.ibeisdata import IBEIS_Data
+from ibeis.detecttools.directory import Directory
+from ibeis.detecttools.ibeisdata import IBEIS_Data
 import utool
 import sys
 import shutil
