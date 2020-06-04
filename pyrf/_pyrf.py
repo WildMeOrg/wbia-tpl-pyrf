@@ -9,7 +9,7 @@ import time
 import shutil
 from collections import OrderedDict as odict
 from os.path import join, exists, abspath, isdir
-from ibeis.detecttools.directory import Directory
+from wbia.detecttools.directory import Directory
 from pyrf.pyrf_helpers import (_load_c_shared_library, _cast_list_to_c, ensure_bytes_strings, _cache_data, _extract_np_array)
 
 
