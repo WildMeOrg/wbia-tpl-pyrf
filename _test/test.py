@@ -4,7 +4,7 @@ from os.path import join, exists  # NOQA
 import cv2
 import random
 from pyrf import Random_Forest_Detector
-from ibeis.detecttools.directory import Directory
+from wbia.detecttools.directory import Directory
 
 
 def _draw_box(img, annotation, xmin, ymin, xmax, ymax, color, stroke=2, top=True):
