@@ -1,50 +1,59 @@
 #!/usr/bin/env python
-from __future__ import absolute_import, division, print_function
-from utool import util_cplat
-from setuptools import setup
-from utool import util_setup
+import ast
+import pathlib
 
-#delete_on_clean = ['libpyrf.dll', 'libpyrf.dll.a', 'libpyrf.so', 'libpyrf.dylib', 'build/']
-clutter_patterns = [
-    'libpyrf.dll',
-    'libpyrf.dll.a',
-    'libpyrf.so',
-    'libpyrf.dylib',
-    'pyrf.egg-info',
-    'build/',
-    '*.pyo',
-    '*.pyc'
-]
+from setuptools import setup, find_packages
 
 
-def build_command():
-    """ Build command run by utool.util_setup """
-    if util_cplat.WIN32:
-        util_cplat.shell('mingw_build.bat')
-    else:
-        util_cplat.shell('./unix_build.sh')
+setup_requires = ()
+install_requires = (
+    'numpy',
+    'six',
+    'wbia-utool',
+)
 
 
-INSTALL_REQUIRES = [
-    #'detecttools >= 1.0.0.dev1',
-]
+def parse_version(fpath):
+    """Statically parse the version number from a python file"""
+    py_module = pathlib.Path(fpath)
+    if not py_module.exists():
+        raise ValueError('fpath={!r} does not exist'.format(fpath))
+    with py_module.open('r') as fb:
+        sourcecode = fb.read()
+    pt = ast.parse(sourcecode)
+
+    class VersionVisitor(ast.NodeVisitor):
+        def visit_Assign(self, node):
+            for target in node.targets:
+                if getattr(target, 'id', None) == '__version__':
+                    self.version = node.value.s
+
+    visitor = VersionVisitor()
+    visitor.visit(pt)
+    return visitor.version
+
+
+name = 'wbia-pyrf'
+version = parse_version('pyrf/__init__.py')  # must be global for git tags
+
+setup_kwargs = dict(
+    name=name,
+    version=version,
+    license='YOLO',
+    description=('Detects objects in images using Rf'),
+    packages=find_packages(exclude=['tests', 'tests.*']),
+    url='https://github.com/WildbookOrg/wbia-tpl-pyrf',
+    author='Jason Parham, WildMe Developers',
+    author_email='dev@wildme.org',
+    setup_requires=setup_requires,
+    install_requires=install_requires,
+    # package_data={'build': util_cplat.get_dynamic_lib_globstrs()},
+    cmake_args=[
+        '-DCMAKE_BUILD_TYPE=Release',
+    ],
+)
+
 
 if __name__ == '__main__':
-    kwargs = util_setup.setuptools_setup(
-        name='pyrf',
-        packages=['pyrf', 'build'],
-        #packages=util_setup.find_packages(),
-        version=util_setup.parse_package_for_version('pyrf'),
-        licence=util_setup.read_license('LICENSE'),
-        long_description=util_setup.parse_readme('README.md'),
-        description=('Detects objects in images using random forests'),
-        url='https://github.com/bluemellophone/pyrf',
-        author='Jason Parham',
-        author_email='bluemellophone@gmail.com',
-        clutter_patterns=clutter_patterns,
-        install_requires=INSTALL_REQUIRES,
-        package_data={'build': util_cplat.get_dynamic_lib_globstrs()},
-        build_command=build_command,
-        setup_fpath=__file__,
-    )
-    setup(**kwargs)
+    import skbuild
+    skbuild.setup(**setup_kwargs)
