@@ -6,7 +6,7 @@
 #rm -rf CMakeFiles
 #rm -rf CMakeCache.txt
 #rm -rf cmake_install.cmake
-python2.7 -c "import utool as ut; print('keeping build dir' if ut.get_argflag(('--fast', '--no-rmbuild')) else ut.delete('build'))" $@
+python -c "import utool as ut; print('keeping build dir' if ut.get_argflag(('--fast', '--no-rmbuild')) else ut.delete('build'))" $@
 
 #TODO: use default python 2.7 or 3.
 # Whatever the default is in the virtualenv
@@ -19,7 +19,7 @@ cd build
 #################################
 
 
-export PYEXE=$(which python2.7)
+export PYEXE=$(which python)
 export IN_VENV=$($PYEXE -c "import sys; print(hasattr(sys, 'real_prefix'))")
 echo "IN_VENV = $IN_VENV"
 
