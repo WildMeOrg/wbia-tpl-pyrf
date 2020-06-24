@@ -1,102 +1,229 @@
-cmake_minimum_required(VERSION 2.13.0)
+cmake_minimum_required(VERSION 3.13.0)
 
-include(cmake/VersionDiscovery.cmake)
-discover_version()
-# CMP0048 is used to enable `project()` to manage `VERSION` & `VERSION*` variables
-cmake_policy(SET CMP0048 NEW)
+set (CMAKE_CXX_STANDARD 11)
 
-#######################################
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0003 NEW)
+    cmake_policy(SET CMP0042 NEW)
+endif(COMMAND cmake_policy)
 
-project(pydarknet VERSION "${DISCOVERED_VERSION}" LANGUAGES C CXX)
-set(CMAKE_BUILD_TYPE "Release")
+project(pyrf LANGUAGES C CXX)
+string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
-option(CUDA "build with cuda" Off)
-set(CFLAGS -Wall -O2)
+include(${PROJECT_SOURCE_DIR}/CMake/pyrf_utils.cmake)
 
+function(_pycmd outvar cmd)
+  execute_process(
+    COMMAND python -c "${cmd}"
+    RESULT_VARIABLE _exitcode
+    OUTPUT_VARIABLE _output
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+  if(NOT ${_exitcode} EQUAL 0)
+    message(ERROR "Failed when running python code: \"\"\"
+${cmd}\"\"\"")
+    message(FATAL_ERROR "Python command failed with error code: ${_exitcode}")
+  endif()
+  # Remove supurflous newlines (artifacts of print)
+  string(STRIP "${_output}" _output)
+  set(${outvar} "${_output}" PARENT_SCOPE)
+endfunction()
+_pycmd(PYRF_VERSION "import setup; print(setup.version)")
 
-#######################################
-# Find required packages
+message(STATUS "PYRF_VERSION = ${PYRF_VERSION}")
 
-if (APPLE)
-  # Include Homebrew installed libraries
-  message("USING Homebrew")
-  include_directories(/usr/local/include)
-  link_directories(/usr/local/lib)
+DISSECT_VERSION()
+GET_OS_INFO()
+
+if (OS_IS_MACOS)
+    message(STATUS "INCLUDING MACPORTS")
+
+    find_package(Eigen3 3 REQUIRED NO_MODULE)
+
+    include_directories(/opt/local/include)
+    link_directories(/opt/local/lib)
+
+    set(CMAKE_INSTALL_RPATH "/opt/local/lib")
+
+    # Add flags to support clang2
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
 endif()
 
-message(STATUS "Checking OpenCV")
+# Setup basic python stuff and ensure we have skbuild
+#list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMake")
+#include( skbuild-helpers )
+
+#######################################
+
+# detect if using the Clang compiler
+if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
+  set(CMAKE_COMPILER_IS_CLANG 1)
+endif ()
+
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  set(CMAKE_COMPILER_IS_CLANGXX 1)
+endif ()
+
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+# Add an "uninstall" target
+CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/CMake/uninstall_target.cmake.in"
+    "${PROJECT_BINARY_DIR}/uninstall_target.cmake" IMMEDIATE @ONLY)
+ADD_CUSTOM_TARGET (uninstall "${CMAKE_COMMAND}" -P
+    "${PROJECT_BINARY_DIR}/uninstall_target.cmake")
+
+# Set the build type.  Options are:
+#  Debug          : w/ debug symbols, w/o optimization
+#  Release        : w/o debug symbols, w/ optimization
+#  RelWithDebInfo : w/ debug symbols, w/ optimization
+#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
+
+if (NOT CMAKE_BUILD_TYPE)
+    #set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
+    #set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+#set the default path for built executables to the "bin" directory
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+#set the default path for built libraries to the "lib" directory
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+# set output path for tests
+set(TEST_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test)
+
+option(BUILD_TESTS "Build tests" ON)
+option(BUILD_DOC "Build documentation" ON)
+option(USE_OPENMP "Use OpenMP multi-threading" ON)
+
 find_package( OpenCV REQUIRED )
-add_definitions(-DOPENCV)
-include_directories(${OpenCV_INCLUDE_DIRS})
-
-
-
-# #######################################
-# # Clang2 = Clang + OpenMP built for OSX Mavericks
-# # http://goo.gl/1Tg0Zj
-# if (APPLE)
-#     set(CMAKE_MACOSX_RPATH 1)
-#     message("Detected APPLE system")
-#     SET(CLANG2 Off)
-# endif()
-
-# if (APPLE AND CLANG2)
-# 	message("Using clang2")
-#     set(CMAKE_C_COMPILER "clang2")
-#     set(CMAKE_CXX_COMPILER "clang2++")
-# endif()
-# #######################################
-# #######################################
-# if(APPLE AND CLANG2)
-#     # Add flags to support clang2
-#     message("APPLE + CLANG2: Adding stdlib flags for clang")
-#     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
-#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-#     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
-#     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
-# endif()
-# #######################################
-
-message(STATUS "Checking OpenMP")
-find_package(OpenMP)
-IF(OPENMP_FOUND)
-    message("Found OpenMP! ^_^")
-    # add flags for OpenMP
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -fopenmp")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -fopenmp")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${OpenMP_C_FLAGS} ${OpenMP_SHARED_LINKER_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_C_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+IF(OpenCV_FOUND)
+  include_directories(${OpenCV_INCLUDE_DIR})
 ELSE()
-    message(FATAL_ERROR "Missed OpenMP! x_x")
+  message(FATAL_ERROR "OpenCV NOT found")
 ENDIF()
 
-#######################################
+if (USE_OPENMP)
+    find_package(OpenMP)
+    if(OPENMP_FOUND)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    else()
+        message(WARNING "OpenMP NOT found")
+    endif()
+endif()
 
-set(
-  SOURCE_FILES
-  src/CRForestDetector.cpp
-  src/CRPatch.cpp
-  src/CRTree.cpp
-  src/HoG.cpp
-)
+find_package(PkgConfig REQUIRED)
 
+#set the C/C++ include path to the "include" directory
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/src/cpp)
 
-#######################################
+add_definitions("-Wall -Wno-unknown-pragmas -Wno-unused-function" )
 
-
-#######################################
-# Define library targets
-
-file(GLOB SOURCE_FILES "src/*.cpp")
-file(GLOB HEADER_FILES "src/*.h")
-
-add_library(pyrf SHARED src/pyrf.cpp ${SOURCE_FILES})
-target_link_libraries(pyrf ${OpenCV_LIBS})
+# install and export variables
+set(config_install_dir "lib/CMake/${PROJECT_NAME}")
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(version_config "${generated_dir}/pyrf-config-version.cmake")
+set(project_config "${generated_dir}/pyrf-config.cmake")
+set(targets_export_name "pyrf-targets")
+set(namespace "pyrf::")
 
 if (SKBUILD)
-  install(TARGETS pyrf DESTINATION pyrf/lib)
-  install(FILES ${HEADER_FILES} DESTINATION pyrf/include)
-else ()
-  install(TARGETS ${install_target} DESTINATION lib)
-  install(FILES ${HEADER_FILES} DESTINATION include)
+  # Override output paths when using scikit-build
+  set(PYRF_LIB_INSTALL_DIR "pyrf/lib")
+  set(PYRF_INCLUDE_INSTALL_DIR "pyrf/include")
 endif()
+
+if (NOT SKBUILD)
+  add_subdirectory( CMake )
+endif()
+add_subdirectory( src/cpp )
+if (BUILD_TESTS)
+  add_subdirectory( test )
+endif (BUILD_TESTS)
+
+# CMake configuration file creation
+# Include module with fuction 'write_basic_package_version_file'
+include(CMakePackageConfigHelpers)
+
+# Configure 'pyrf-config-version.cmake'
+# Note: PYRF_VERSION is used as a VERSION
+write_basic_package_version_file(
+    "${version_config}"
+    VERSION ${PYRF_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# Configure 'pyrf-config.cmake'
+# Use variables:
+#   * targets_export_name
+#   * PROJECT_NAME
+configure_package_config_file(
+  "CMake/Config.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}"
+)
+
+if (NOT SKBUILD)
+  # Config
+  #   * <prefix>/lib/CMake/pyrf/pyrf-config.cmake
+  #   * <prefix>/lib/CMake/pyrf/pyrf-config-version.cmake
+  install(
+      FILES "${project_config}" "${version_config}"
+      DESTINATION "${config_install_dir}"
+  )
+  # Config
+  #   * <prefix>/lib/CMake/pyrf/pyrf-targets.cmake
+  install(
+      EXPORT "${targets_export_name}"
+      NAMESPACE "${namespace}"
+      DESTINATION "${config_install_dir}"
+  )
+endif()
+
+
+# CPACK options
+
+# RPM
+find_program(RPM_PROGRAM rpm)
+if(EXISTS ${RPM_PROGRAM})
+  list(APPEND CPACK_GENERATOR "RPM")
+endif(EXISTS ${RPM_PROGRAM})
+# DEB
+find_program(DPKG_PROGRAM dpkg)
+if(EXISTS ${DPKG_PROGRAM})
+  list(APPEND CPACK_GENERATOR "DEB")
+endif(EXISTS ${DPKG_PROGRAM})
+# NSIS
+find_program(NSIS_PROGRAM makensis MakeNSIS)
+if(EXISTS ${NSIS_PROGRAM})
+  list(APPEND CPACK_GENERATOR "NSIS")
+endif(EXISTS ${NSIS_PROGRAM})
+# dpkg
+find_program(PACKAGE_MAKER_PROGRAM PackageMaker
+	    HINTS /Developer/Applications/Utilities)
+if(EXISTS ${PACKAGE_MAKER_PROGRAM})
+  list(APPEND CPACK_GENERATOR "PackageMaker")
+endif(EXISTS ${PACKAGE_MAKER_PROGRAM})
+
+set(CPACK_GENERATOR "${CPACK_GENERATOR}")
+set(CPACK_MONOLITHIC_INSTALL 1)
+set(CPACK_SET_DESTDIR ON)
+include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_CONTACT "Marius Muja")
+set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+SET(CPACK_PACKAGE_VERSION ${PYRF_VERSION})
+SET(CPACK_PACKAGE_VERSION_MAJOR ${PYRF_VERSION_MAJOR})
+SET(CPACK_PACKAGE_VERSION_MINOR ${PYRF_VERSION_MINOR})
+SET(CPACK_PACKAGE_VERSION_PATCH ${PYRF_VERSION_PATCH})
+include(CPack)
+
+
+message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Building tests: ${BUILD_TESTS}")
+message(STATUS "Building documentation: ${BUILD_DOC}")
+message(STATUS "Using OpenMP support: ${USE_OPENMP}")

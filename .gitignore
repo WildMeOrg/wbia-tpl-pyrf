@@ -85,3 +85,6 @@ CMakeFiles
 _doc/
 _test/output*
 _test/trees
+
+_skbuild/
+src/cpp/pyrf/config.h

@@ -1,6 +1,7 @@
-#============================
+# -*- coding: utf-8 -*-
+# ============================
 # Python Interface
-#============================
+# ============================
 from __future__ import absolute_import, division, print_function
 from os.path import join, realpath, dirname
 import cv2
@@ -17,7 +18,10 @@ ut.noinject(__name__, '[pyrf_helpers]')
 def ensure_bytes_strings(str_list):
     # converts python3 strings into bytes
     if sys.hexversion > 0x03000000:
-        return [str_ if not isinstance(str_, str) else bytes(str_, 'utf-8') for str_ in str_list]
+        return [
+            str_ if not isinstance(str_, str) else bytes(str_, 'utf-8')
+            for str_ in str_list
+        ]
     else:
         return str_list
 
@@ -45,16 +49,15 @@ def _arrptr_to_np(c_arrptr, shape, arr_t, dtype):
         shape   - shape of that array pointer
         arr_t   - the ctypes datatype of c_arrptr
     """
-    arr_t_size = C.POINTER(C.c_char * dtype().itemsize)           # size of each item
-    c_arr = C.cast(c_arrptr.astype(int), arr_t_size)              # cast to ctypes
-    np_arr = np.ctypeslib.as_array(c_arr, shape)                  # cast to numpy
-    np_arr.dtype = dtype                                          # fix numpy dtype
+    arr_t_size = C.POINTER(C.c_char * dtype().itemsize)  # size of each item
+    c_arr = C.cast(c_arrptr.astype(int), arr_t_size)  # cast to ctypes
+    np_arr = np.ctypeslib.as_array(c_arr, shape)  # cast to numpy
+    np_arr.dtype = dtype  # fix numpy dtype
     np_arr = np.require(np_arr, dtype=dtype, requirements=['O'])  # prevent memory leaks
     return np_arr
 
 
-def _extract_np_array(size_list, ptr_list, arr_t, arr_dtype,
-                        arr_dim):
+def _extract_np_array(size_list, ptr_list, arr_t, arr_dtype, arr_dim):
     """
     size_list - contains the size of each output 2d array
     ptr_list  - an array of pointers to the head of each output 2d
@@ -63,8 +66,10 @@ def _extract_np_array(size_list, ptr_list, arr_t, arr_dtype,
     arr_dtype - the numpy array type
     arr_dim   - the number of columns in each output 2d array
     """
-    arr_list = [_arrptr_to_np(arr_ptr, (size, arr_dim), arr_t, arr_dtype)
-                    for (arr_ptr, size) in zip(ptr_list, size_list)]
+    arr_list = [
+        _arrptr_to_np(arr_ptr, (size, arr_dim), arr_t, arr_dtype)
+        for (arr_ptr, size) in zip(ptr_list, size_list)
+    ]
     return arr_list
 
 
@@ -97,7 +102,7 @@ def _cache_data(src_path_list, dst_path, format_str='data_%07d.JPEG', **kwargs):
     counter = 0
     for src_path in src_path_list:
         if kwargs['verbose']:
-            print("Processing %r" % (src_path, ))
+            print('Processing %r' % (src_path,))
         # Load the iamge
         image = cv2.imread(src_path)
         if image is None:
@@ -108,32 +113,45 @@ def _cache_data(src_path_list, dst_path, format_str='data_%07d.JPEG', **kwargs):
         # Determine new image size
         if kwargs['chips_norm_width'] is not None and kwargs['chips_norm_height'] is None:
             # Normalizing width (with respect to aspect ratio)
-            width  = kwargs['chips_norm_width']
-            height = int( ( width / width_ ) * height_ )
-        elif kwargs['chips_norm_height'] is not None and kwargs['chips_norm_width'] is None:
+            width = kwargs['chips_norm_width']
+            height = int((width / width_) * height_)
+        elif (
+            kwargs['chips_norm_height'] is not None and kwargs['chips_norm_width'] is None
+        ):
             # Normalizing height (with respect to aspect ratio)
             height = kwargs['chips_norm_height']
-            width  = int( ( height / height_ ) * width_ )
-        elif kwargs['chips_norm_width'] is not None and kwargs['chips_norm_height'] is not None:
+            width = int((height / height_) * width_)
+        elif (
+            kwargs['chips_norm_width'] is not None
+            and kwargs['chips_norm_height'] is not None
+        ):
             # Normalizing width and height (ignoring aspect ratio)
-            width  = kwargs['chips_norm_width']
+            width = kwargs['chips_norm_width']
             height = kwargs['chips_norm_height']
         else:
-            width  = width_
+            width = width_
             height = height_
         # Check for patch size limitation
         if width < kwargs['patch_width'] or height < kwargs['patch_height']:
-            print('\t[WARNING] Image size is too small for the patch size, skipping image')
+            print(
+                '\t[WARNING] Image size is too small for the patch size, skipping image'
+            )
             continue
         # Resize the image
         image_ = cv2.resize(image, (width, height), interpolation=cv2.INTER_LANCZOS4)
         # Flip the image (if nessicary)
-        if kwargs['chips_prob_flip_horizontally'] is not None and random.uniform(0.0, 1.0) <= kwargs['chips_prob_flip_horizontally']:
+        if (
+            kwargs['chips_prob_flip_horizontally'] is not None
+            and random.uniform(0.0, 1.0) <= kwargs['chips_prob_flip_horizontally']
+        ):
             image_ = cv2.flip(image_, 1)
-        if kwargs['chips_prob_flip_vertically']   is not None and random.uniform(0.0, 1.0) <= kwargs['chips_prob_flip_vertically']:
+        if (
+            kwargs['chips_prob_flip_vertically'] is not None
+            and random.uniform(0.0, 1.0) <= kwargs['chips_prob_flip_vertically']
+        ):
             image_ = cv2.flip(image_, 0)
         # Get the images destination filename
-        chip_filename = format_str % (counter, )
+        chip_filename = format_str % (counter,)
         # Write the iamge
         cv2.imwrite(join(dst_path, chip_filename), image_)
         # Append the image's destaintion filename to the return list
