@@ -249,5 +249,5 @@ if __name__ == '__main__':
     """
     python -c "import pyrf; print(pyrf.__file__)"
     """
-    from setuptools import setup, find_packages
+    from skbuild import setup
     setup(**KWARGS)
