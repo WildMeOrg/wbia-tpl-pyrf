@@ -88,3 +88,4 @@ _test/trees
 
 _skbuild/
 src/cpp/pyrf/config.h
+pip-wheel-metadata/
