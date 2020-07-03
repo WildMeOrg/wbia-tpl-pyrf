@@ -19,6 +19,7 @@ file(GLOB HEADER_HPP_SOURCES "pyrf/*.hpp")
 
 add_library(pyrf_s STATIC
             "${CPP_SOURCES};${HEADER_H_SOURCES};${HEADER_HPP_SOURCES}")
+message(STATUS "${OpenCV_LIBS}")
 target_link_libraries(pyrf_s ${OpenCV_LIBS})
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
@@ -40,9 +41,7 @@ else()
   set(LINK_FLAG_PREFIX "/WHOLEARCHIVE")
 endif()
 
-target_link_libraries(pyrf ${LINK_FLAG_PREFIX} pyrf_s ${OpenCV_LIBS}
-                      ${LINK_FLAG_POSTFIX})
-target_link_libraries(pyrf ${OpenCV_LIBS})
+target_link_libraries(pyrf ${LINK_FLAG_PREFIX} pyrf_s ${LINK_FLAG_POSTFIX})
 
 set_target_properties(
   pyrf PROPERTIES VERSION ${PYRF_VERSION} SOVERSION ${PYRF_SOVERSION}
