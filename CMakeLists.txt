@@ -99,6 +99,19 @@ option(BUILD_TESTS "Build tests" ON)
 option(BUILD_DOC "Build documentation" ON)
 option(USE_OPENMP "Use OpenMP multi-threading" ON)
 
+if(OS_IS_MACOS)
+  find_package(Gflags REQUIRED)
+  if(Gflags_FOUND
+     OR GFLAGS_FOUND
+     OR GFLAGS_INCLUDE_DIRS)
+    message(STATUS "GFLAGS_INCLUDE_DIR: ${GFLAGS_INCLUDE_DIR}")
+    message(STATUS "GFLAGS_LIBRARIES: ${GFLAGS_LIBRARIES}")
+    include_directories(${GFLAGS_INCLUDE_DIR})
+  else()
+    message(FATAL_ERROR "GFlags NOT found")
+  endif()
+endif()
+
 find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
   include_directories(${OpenCV_INCLUDE_DIR})

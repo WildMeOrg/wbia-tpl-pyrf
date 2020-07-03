@@ -13,14 +13,12 @@ add_definitions(-DPYRF_VERSION=${PYRF_VERSION})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pyrf/config.h.in
                ${CMAKE_CURRENT_SOURCE_DIR}/pyrf/config.h)
 
-set(CPP_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/pyrf/CRForestDetector.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/pyrf/CRPatch.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/pyrf/CRTree.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/pyrf/HoG.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/pyrf/pyrf.cpp)
+file(GLOB CPP_SOURCES "pyrf/*.cpp")
+file(GLOB HEADER_H_SOURCES "pyrf/*.h")
+file(GLOB HEADER_HPP_SOURCES "pyrf/*.hpp")
 
-add_library(pyrf_s STATIC ${CPP_SOURCES})
+add_library(pyrf_s STATIC
+            "${CPP_SOURCES};${HEADER_H_SOURCES};${HEADER_HPP_SOURCES}")
 target_link_libraries(pyrf_s ${OpenCV_LIBS})
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
@@ -29,20 +27,22 @@ endif()
 
 set_property(TARGET pyrf_s PROPERTY COMPILE_DEFINITIONS PYRF_STATIC)
 
-add_library(pyrf SHARED "${CMAKE_CURRENT_SOURCE_DIR}/pyrf/pyrf.h")
+add_library(pyrf SHARED "${HEADER_H_SOURCES};${HEADER_HPP_SOURCES}")
 
 if(OS_IS_LINUX)
   set_target_properties(pyrf PROPERTIES LINKER_LANGUAGE CXX)
   set(LINK_FLAG_PREFIX "-Wl,--whole-archive")
   set(LINK_FLAG_POSTFIX "-Wl,--no-whole-archive")
 elseif(OS_IS_MACOS)
-  set(LINK_FLAG_PREFIX "-Wl,-all_load")
+  set(LINK_FLAG_PREFIX "-Wl,-force_load")
 else()
   set_target_properties(pyrf PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS YES)
   set(LINK_FLAG_PREFIX "/WHOLEARCHIVE")
 endif()
 
-target_link_libraries(pyrf ${LINK_FLAG_PREFIX} pyrf_s ${LINK_FLAG_POSTFIX})
+target_link_libraries(pyrf ${LINK_FLAG_PREFIX} pyrf_s ${OpenCV_LIBS}
+                      ${LINK_FLAG_POSTFIX})
+target_link_libraries(pyrf ${OpenCV_LIBS})
 
 set_target_properties(
   pyrf PROPERTIES VERSION ${PYRF_VERSION} SOVERSION ${PYRF_SOVERSION}

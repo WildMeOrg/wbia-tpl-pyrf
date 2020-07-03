@@ -7,6 +7,10 @@
 #include "CRForest-Detector-Class.hpp"
 #include "CRForest.h"
 
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
+
 using namespace std;
 
 typedef unsigned char uint8;

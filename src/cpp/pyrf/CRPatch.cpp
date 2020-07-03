@@ -4,7 +4,7 @@
 */
 
 #include "CRPatch.h"
-#include <opencv/highgui.h>
+#include <opencv2/highgui.hpp>
 
 #include <deque>
 

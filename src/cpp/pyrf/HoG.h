@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <opencv/cxcore.h>
+#include <opencv2/core.hpp>
 
 #include <vector>
 

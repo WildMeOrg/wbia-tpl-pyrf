@@ -71,7 +71,7 @@
 #include <omp.h>
 #endif
 
-#include <opencv/highgui.h>
+#include <opencv2/highgui.hpp>
 
 #include "CRForestDetector.h"
 
@@ -187,7 +187,8 @@ public:
         // <VECTOR> | scale | y | x | cvPoint
 
         // Load image and create temporary objects
-        IplImage *img = cvLoadImage(input_gpath.c_str(), CV_LOAD_IMAGE_COLOR);
+        cv::Mat img_mat = cv::imread(input_gpath.c_str(), CV_LOAD_IMAGE_COLOR);
+        IplImage* img = new IplImage(img_mat);
         #pragma omp critical(imageLoad)
         {
             if (!img)
@@ -209,7 +210,9 @@ public:
         IplImage *combinedMax = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_32F, 1);
         IplImage *upscaled = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_32F, 1);
         IplImage *output   = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_8U,  1);
-        IplImage *debug    = cvLoadImage(input_gpath.c_str(), CV_LOAD_IMAGE_COLOR);
+
+        cv::Mat debug_mat = cv::imread(input_gpath.c_str(), CV_LOAD_IMAGE_COLOR);
+        IplImage* debug = new IplImage(debug_mat);
 
         // Prepare scale_vector
         int w, h, k;
@@ -249,7 +252,10 @@ public:
                 cvConvertScale( vImgDetect[k], vImgDetect[k], sensitivity);
                 cvSmooth( vImgDetect[k], vImgDetect[k], CV_GAUSSIAN, 5);
                 sprintf(buffer, "%s_scaled_%0.02f.JPEG", output_scale_gpath.c_str(), scale_vector[k]);
-                cvSaveImage(buffer, vImgDetect[k]);
+
+                cv::Mat temp_mat = cv::cvarrToMat(vImgDetect[k]);
+                cv::imwrite(buffer, temp_mat);
+                temp_mat.release();
             }
             // Release images
             cvReleaseImage(&vImgDetect[k]);
@@ -298,11 +304,15 @@ public:
                 {
                     sprintf(buffer, "%s_debug_add.JPEG", output_gpath.c_str());
                     cvConvertScale( combinedAdd, combinedAdd, sensitivity / scale_vector.size() );
-                    cvSaveImage(buffer, combinedAdd);
+                    cv::Mat combinedAdd_mat = cv::cvarrToMat(combinedAdd);
+                    cv::imwrite(buffer, combinedAdd_mat);
+                    combinedAdd_mat.release();
 
                     sprintf(buffer, "%s_debug_max.JPEG", output_gpath.c_str());
                     cvConvertScale( combinedMax, combinedMax, sensitivity );
-                    cvSaveImage(buffer, combinedMax);
+                    cv::Mat combinedMax_mat = cv::cvarrToMat(combinedMax);
+                    cv::imwrite(buffer, combinedMax_mat);
+                    combinedMax_mat.release();
                 }
             }
 
@@ -320,7 +330,9 @@ public:
             if (output_gpath.length() > 0)
             {
                 // Save output mode image
-                cvSaveImage(output_gpath.c_str(), output);
+                cv::Mat output_mat = cv::cvarrToMat(output);
+                cv::imwrite(output_gpath.c_str(), output_mat);
+                output_mat.release();
             }
 
             // if (output_gpath.length() > 0)
@@ -329,7 +341,10 @@ public:
             //     cvSmooth( output, output, CV_GAUSSIAN, 5);
             //     // Save output mode image
             //     sprintf(buffer, "%s_dialate.JPEG", output_gpath.c_str());
-            //     cvSaveImage(buffer, output);
+            //     cv::Mat output_mat = cv::cvarrToMat(output);
+            //     cv::imwrite(buffer, output_mat);
+            //     output_mat.release();
+            //
             // }
 
             cvThreshold(output, output, threshold, 0, CV_THRESH_TOZERO);
@@ -340,7 +355,9 @@ public:
                 {
                     // Save output mode image
                     sprintf(buffer, "%s_debug_thresh.JPEG", output_gpath.c_str());
-                    cvSaveImage(buffer, output);
+                    cv::Mat output_mat = cv::cvarrToMat(output);
+                    cv::imwrite(buffer, output_mat);
+                    output_mat.release();
                 }
             }
 
@@ -612,7 +629,9 @@ public:
             if (output_gpath.length() > 0)
             {
                 // Save output mode image
-                cvSaveImage(output_gpath.c_str(), output);
+                cv::Mat output_mat = cv::cvarrToMat(output);
+                cv::imwrite(output_gpath.c_str(), output_mat);
+                output_mat.release();
             }
         }
 
@@ -624,10 +643,14 @@ public:
             if(output_gpath.length() > 0)
             {
                 sprintf(buffer, "%s_debug_original.JPEG", output_gpath.c_str());
-                cvSaveImage(buffer, img);
+                cv::Mat img_mat = cv::cvarrToMat(img);
+                cv::imwrite(buffer, img_mat);
+                img_mat.release();
 
                 sprintf(buffer, "%s_debug.JPEG", output_gpath.c_str());
-                cvSaveImage(buffer, debug);
+                cv::Mat debug_mat = cv::cvarrToMat(debug);
+                cv::imwrite(buffer, debug_mat);
+                debug_mat.release();
             }
         }
 
@@ -635,6 +658,9 @@ public:
         cvReleaseImage(&img);
         cvReleaseImage(&output);
         cvReleaseImage(&debug);
+
+        img_mat.release();
+        debug_mat.release();
 
         // Save results
         int size = temp.size();
@@ -678,7 +704,8 @@ private:
             // Get the image's filepah
             img_filepath = train_pos_chip_path_string + "/" + train_pos_chip_filename_vector[i];
             // Load image
-            img = cvLoadImage(img_filepath.c_str(), CV_LOAD_IMAGE_COLOR);
+            cv::Mat img_mat = cv::imread(img_filepath.c_str(), CV_LOAD_IMAGE_COLOR);
+            img = new IplImage(img_mat);
             if (!img)
             {
                 cout << endl << "[pyrf c++] Could not load image file: " << img_filepath;
@@ -688,6 +715,7 @@ private:
             patch_total += Train.extractPatches(img, patch_density, label);
             // Release image
             cvReleaseImage(&img);
+            img_mat.release();
         }
         return patch_total;
     }

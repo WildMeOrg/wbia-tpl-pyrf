@@ -5,7 +5,7 @@
 
 #include "CRTree.h"
 #include <fstream>
-#include <opencv/highgui.h>
+#include <opencv2/highgui.hpp>
 #include <algorithm>
 
 using namespace std;
