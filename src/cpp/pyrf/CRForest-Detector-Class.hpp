@@ -71,11 +71,15 @@
 #include <omp.h>
 #endif
 
-#include <opencv2/highgui.hpp>
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/imgcodecs/imgcodecs.hpp"
 
 #include "CRForestDetector.h"
 
 using namespace std;
+using namespace cv;
 
 struct CRForestDetectorClass
 {
@@ -105,11 +109,11 @@ public:
     }
 
     // Init and start training
-    void train(string train_pos_chip_path_string,
+    void train(std::string train_pos_chip_path_string,
                vector<string> &train_pos_chip_filename_vector,
-               string train_neg_chip_path_string,
+               std::string train_neg_chip_path_string,
                vector<string> &train_neg_chip_filename_vector,
-               string trees_path_string, int patch_width, int patch_height,
+               std::string trees_path_string, int patch_width, int patch_height,
                float patch_density, int trees_num, int trees_offset,
                int trees_max_depth, int trees_max_patches,
                int trees_leaf_size, int trees_pixel_tests,
@@ -154,8 +158,8 @@ public:
     }
 
     // Run detector
-    int detect(CRForest *forest, string input_gpath, string output_gpath,
-               string output_scale_gpath, int mode, float sensitivity,
+    int detect(CRForest *forest, std::string input_gpath, std::string output_gpath,
+               std::string output_scale_gpath, int mode, float sensitivity,
                vector<float> &scale_vector, int nms_min_area_contour,
                int nms_min_area_overlap, float **results, int RESULT_LENGTH,
                bool serial, bool verbose, bool quiet)
@@ -165,7 +169,7 @@ public:
         // int threshold = int(255.0 * 0.90);
         bool debug_flag = true;
         int threshold = int(255 * 0.90);
-        int accumulate_mode = 1; // 1 - max, 0 - add | 0 - hough, 1 - classification
+        // int accumulate_mode = 1; // 1 - max, 0 - add | 0 - hough, 1 - classification
         float density = 0.990;
         verbose = true;
 
@@ -187,7 +191,7 @@ public:
         // <VECTOR> | scale | y | x | cvPoint
 
         // Load image and create temporary objects
-        cv::Mat img_mat = cv::imread(input_gpath.c_str(), CV_LOAD_IMAGE_COLOR);
+        cv::Mat img_mat = imread(input_gpath, CV_LOAD_IMAGE_COLOR);
         IplImage* img = new IplImage(img_mat);
         #pragma omp critical(imageLoad)
         {
@@ -211,7 +215,7 @@ public:
         IplImage *upscaled = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_32F, 1);
         IplImage *output   = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_8U,  1);
 
-        cv::Mat debug_mat = cv::imread(input_gpath.c_str(), CV_LOAD_IMAGE_COLOR);
+        cv::Mat debug_mat = imread(input_gpath, CV_LOAD_IMAGE_COLOR);
         IplImage* debug = new IplImage(debug_mat);
 
         // Prepare scale_vector
@@ -678,11 +682,11 @@ public:
 
 private:
     // Extract patches from training data
-    int extract_Patches(CRPatch &Train, CvRNG *pRNG, string train_pos_chip_path_string,
+    int extract_Patches(CRPatch &Train, CvRNG *pRNG, std::string train_pos_chip_path_string,
                         vector<string> &train_pos_chip_filename_vector, int label,
                         float patch_density, int max_patches, bool verbose, bool quiet)
     {
-        string img_filepath;
+        std::string img_filepath;
         IplImage *img;
         int patch_total = 0;
         // load postive images and extract patches
@@ -704,7 +708,7 @@ private:
             // Get the image's filepah
             img_filepath = train_pos_chip_path_string + "/" + train_pos_chip_filename_vector[i];
             // Load image
-            cv::Mat img_mat = cv::imread(img_filepath.c_str(), CV_LOAD_IMAGE_COLOR);
+            cv::Mat img_mat = imread(img_filepath, CV_LOAD_IMAGE_COLOR);
             img = new IplImage(img_mat);
             if (!img)
             {

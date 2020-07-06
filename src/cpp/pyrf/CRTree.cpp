@@ -4,9 +4,11 @@
 */
 
 #include "CRTree.h"
+
 #include <fstream>
-#include <opencv2/highgui.hpp>
 #include <algorithm>
+
+#include "opencv2/highgui/highgui.hpp"
 
 using namespace std;
 

@@ -7,9 +7,9 @@
 #include "CRForest-Detector-Class.hpp"
 #include "CRForest.h"
 
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
+// #include "opencv2/core/core.hpp"
+// #include "opencv2/highgui/highgui.hpp"
+// #include "opencv2/imgcodecs/imgcodecs.hpp"
 
 using namespace std;
 
@@ -55,9 +55,9 @@ PYTHON_RANDOM_FOREST void train(CRForestDetectorClass *detector, char *train_pos
                                 bool quiet)
 {
     // Convert char* to nice strings, we are not Neanderthals
-    string train_pos_chip_path_string = train_pos_chip_path;
-    string train_neg_chip_path_string = train_neg_chip_path;
-    string trees_path_string          = trees_path;
+    std::string train_pos_chip_path_string = train_pos_chip_path;
+    std::string train_neg_chip_path_string = train_neg_chip_path;
+    std::string trees_path_string          = trees_path;
 
     // Convert char* pointers to vector of strings for convenience
     vector<string> train_pos_chip_filename_vector(_train_pos_chip_num);
@@ -115,9 +115,9 @@ PYTHON_RANDOM_FOREST void detect(CRForestDetectorClass *detector, CRForest *fore
     #pragma omp parallel for if(!serial)
     for (int index = 0; index < _input_gpath_num; ++index)
     {
-        string input_gpath = input_gpath_array[index];
-        string output_gpath = output_gpath_array[index];
-        string output_scale_gpath = output_scale_gpath_array[index];
+        std::string input_gpath = input_gpath_array[index];
+        std::string output_gpath = output_gpath_array[index];
+        std::string output_scale_gpath = output_scale_gpath_array[index];
         // Run detection
         int length = detector->detect(forest, input_gpath, output_gpath,
                                        output_scale_gpath, mode, sensitivity,

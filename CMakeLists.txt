@@ -46,7 +46,6 @@ if(OS_IS_MACOS)
 
   set(CMAKE_INSTALL_RPATH "/opt/local/lib")
 
-  # Add flags to support clang2
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++")
@@ -93,7 +92,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 # set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 # set output path for tests
-set(TEST_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test)
+set(TEST_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/tests)
 
 option(BUILD_TESTS "Build tests" ON)
 option(BUILD_DOC "Build documentation" ON)
@@ -114,7 +113,7 @@ endif()
 
 find_package(OpenCV REQUIRED)
 if(OpenCV_FOUND)
-  include_directories(${OpenCV_INCLUDE_DIR})
+  include_directories(${OpenCV_INCLUDE_DIRS})
 else()
   message(FATAL_ERROR "OpenCV NOT found")
 endif()
@@ -153,12 +152,11 @@ if(SKBUILD)
 endif()
 
 if(NOT SKBUILD)
-  add_subdirectory(CMake)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/CMake)
 endif()
-add_subdirectory(src/cpp)
-if(BUILD_TESTS)
-  add_subdirectory(test)
-endif(BUILD_TESTS)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/cpp)
+# if(BUILD_TESTS) add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
+# endif(BUILD_TESTS)
 
 # CMake configuration file creation Include module with fuction
 # 'write_basic_package_version_file'

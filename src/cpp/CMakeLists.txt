@@ -13,13 +13,19 @@ add_definitions(-DPYRF_VERSION=${PYRF_VERSION})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pyrf/config.h.in
                ${CMAKE_CURRENT_SOURCE_DIR}/pyrf/config.h)
 
-file(GLOB CPP_SOURCES "pyrf/*.cpp")
-file(GLOB HEADER_H_SOURCES "pyrf/*.h")
-file(GLOB HEADER_HPP_SOURCES "pyrf/*.hpp")
+file(GLOB_RECURSE CPP_SOURCES *.cpp)
+file(GLOB_RECURSE HEADER_H_SOURCES *.h)
+file(GLOB_RECURSE HEADER_HPP_SOURCES *.hpp)
 
 add_library(pyrf_s STATIC
             "${CPP_SOURCES};${HEADER_H_SOURCES};${HEADER_HPP_SOURCES}")
+
 message(STATUS "${OpenCV_LIBS}")
+message(STATUS "${OpenCV_INCLUDE_DIRS}")
+message(STATUS "${CPP_SOURCES}")
+message(STATUS "${HEADER_H_SOURCES}")
+message(STATUS "${HEADER_HPP_SOURCES}")
+
 target_link_libraries(pyrf_s ${OpenCV_LIBS})
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
@@ -28,7 +34,7 @@ endif()
 
 set_property(TARGET pyrf_s PROPERTY COMPILE_DEFINITIONS PYRF_STATIC)
 
-add_library(pyrf SHARED "${HEADER_H_SOURCES};${HEADER_HPP_SOURCES}")
+add_library(pyrf SHARED ${CMAKE_CURRENT_SOURCE_DIR}/pyrf/config.h)
 
 if(OS_IS_LINUX)
   set_target_properties(pyrf PROPERTIES LINKER_LANGUAGE CXX)
