@@ -11,7 +11,6 @@ import time
 import shutil
 from collections import OrderedDict as odict  # NOQA
 from os.path import join, exists, abspath, isdir
-from wbia.detecttools.directory import Directory
 from pyrf.pyrf_helpers import (
     _load_c_shared_library,
     _cast_list_to_c,
@@ -191,6 +190,8 @@ class Random_Forest_Detector(object):  # NOQA
         return RF_CLIB.forest(rf.detector_c_obj, *params_list)
 
     def train_folder(rf, train_pos_path, train_neg_path, trees_path, **kwargs):
+        from wbia.detecttools.directory import Directory
+
         direct = Directory(train_pos_path, include_file_extensions='images')
         train_pos_cpath_list = direct.files()
         direct = Directory(train_neg_path, include_file_extensions='images')
@@ -317,6 +318,8 @@ class Random_Forest_Detector(object):  # NOQA
 
         # Try to figure out the correct tree offset
         if params['trees_offset'] is None:
+            from wbia.detecttools.directory import Directory
+
             direct = Directory(trees_path, include_file_extensions=['txt'])
             params['trees_offset'] = len(direct.files()) + 1
             if not params['quiet']:

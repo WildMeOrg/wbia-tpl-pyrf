@@ -9,7 +9,7 @@ import random
 import numpy as np
 import ctypes as C
 import sys
-import wbia.detecttools.ctypes_interface as ctypes_interface
+from pyrf import ctypes_interface
 import utool as ut
 
 ut.noinject(__name__, '[pyrf_helpers]')

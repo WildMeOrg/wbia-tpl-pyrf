@@ -5,6 +5,7 @@ import sys
 from os.path import exists
 from collections import OrderedDict
 from setuptools import find_packages
+from skbuild import setup
 
 
 def native_mb_python_tag(plat_impl=None, version_info=None):
@@ -188,12 +189,12 @@ NAME = 'wbia-pyrf'
 
 
 MB_PYTHON_TAG = native_mb_python_tag()  # NOQA
-VERSION = version = parse_version('pyrf/__init__.py')  # must be global for git tags
 
 AUTHORS = [
-    'Avi Weinstock',
+    'Jason Parham',
+    'Jon Crall',
     'Chuck Stewart',
-    'Hendrik Weideman' 'Jason Parham' 'Jon Crall' 'Zackary Rutfield',
+    'WildMe Developers',
 ]
 AUTHOR_EMAIL = 'dev@wildme.org'
 URL = 'https://github.com/WildbookOrg/wbia-tpl-pyrf'
@@ -203,7 +204,6 @@ DESCRIPTION = 'PyRF - Random Forest / Hough Voting Detection Algorithm'
 
 KWARGS = OrderedDict(
     name=NAME,
-    version=VERSION,
     author=', '.join(AUTHORS),
     author_email=AUTHOR_EMAIL,
     description=DESCRIPTION,
@@ -217,6 +217,16 @@ KWARGS = OrderedDict(
         'tests': parse_requirements('requirements/tests.txt'),
         'build': parse_requirements('requirements/build.txt'),
         'runtime': parse_requirements('requirements/runtime.txt'),
+    },
+    # --- VERSION ---
+    # The following settings retreive the version from git.
+    # See https://github.com/pypa/setuptools_scm/ for more information
+    setup_requires=['setuptools_scm'],
+    use_scm_version={
+        'write_to': 'pyrf/_version.py',
+        'write_to_template': '__version__ = "{version}"',
+        'tag_regex': '^(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$',
+        'local_scheme': 'dirty-tag',
     },
     # --- PACKAGES ---
     # The combination of packages and package_dir is how scikit-build will
@@ -261,6 +271,4 @@ if __name__ == '__main__':
     """
     python -c "import pyrf; print(pyrf.__file__)"
     """
-    from skbuild import setup
-
     setup(**KWARGS)
