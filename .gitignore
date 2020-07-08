@@ -90,3 +90,6 @@ _skbuild/
 src/cpp/pyrf/config.h
 pip-wheel-metadata/
 htmlcov/
+
+.eggs/
+pyrf/_version.py
