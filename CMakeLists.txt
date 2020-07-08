@@ -10,7 +10,7 @@ endif(COMMAND cmake_policy)
 project(pyrf LANGUAGES C CXX)
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
-include(${PROJECT_SOURCE_DIR}/cmake/pyrf_utils.cmake)
+include(${PROJECT_SOURCE_DIR}/CMake/pyrf_utils.cmake)
 
 function(_pycmd outvar cmd)
   execute_process(
@@ -69,7 +69,7 @@ endif()
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Add an "uninstall" target
-configure_file("${PROJECT_SOURCE_DIR}/cmake/uninstall_target.cmake.in"
+configure_file("${PROJECT_SOURCE_DIR}/CMake/uninstall_target.cmake.in"
                "${PROJECT_BINARY_DIR}/uninstall_target.cmake" IMMEDIATE @ONLY)
 add_custom_target(uninstall "${CMAKE_COMMAND}" -P
                             "${PROJECT_BINARY_DIR}/uninstall_target.cmake")
@@ -138,7 +138,7 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR}/src/cpp)
 add_definitions("-Wall -Wno-unknown-pragmas -Wno-unused-function")
 
 # install and export variables
-set(config_install_dir "lib/cmake/${PROJECT_NAME}")
+set(config_install_dir "lib/CMake/${PROJECT_NAME}")
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(version_config "${generated_dir}/pyrf-config-version.cmake")
 set(project_config "${generated_dir}/pyrf-config.cmake")
@@ -170,15 +170,15 @@ write_basic_package_version_file(
 
 # Configure 'pyrf-config.cmake' Use variables: * targets_export_name *
 # PROJECT_NAME
-configure_package_config_file("cmake/Config.cmake.in" "${project_config}"
+configure_package_config_file("CMake/Config.cmake.in" "${project_config}"
                               INSTALL_DESTINATION "${config_install_dir}")
 
 if(NOT SKBUILD)
-  # Config * <prefix>/lib/cmake/pyrf/pyrf-config.cmake *
-  # <prefix>/lib/cmake/pyrf/pyrf-config-version.cmake
+  # Config * <prefix>/lib/CMake/pyrf/pyrf-config.cmake *
+  # <prefix>/lib/CMake/pyrf/pyrf-config-version.cmake
   install(FILES "${project_config}" "${version_config}"
           DESTINATION "${config_install_dir}")
-  # Config * <prefix>/lib/cmake/pyrf/pyrf-targets.cmake
+  # Config * <prefix>/lib/CMake/pyrf/pyrf-targets.cmake
   install(
     EXPORT "${targets_export_name}"
     NAMESPACE "${namespace}"
