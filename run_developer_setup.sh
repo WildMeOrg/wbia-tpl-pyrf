@@ -19,17 +19,5 @@ python setup.py develop
 pip install -e .
 
 # Point to custom opencv
-_note="""
-python setup.py build_ext --inplace -- -DOpenCV_DIR=$HOME/code/opencv/build
-python setup.py develop -- -DOpenCV_DIR=$HOME/code/opencv/build
-"""
-#fi
-
-
-# #################################
-# if [[ '$OSTYPE' == 'darwin'* ]]; then
-#     echo 'Fixing OSX libiomp'
-#     # install_name_tool -change libiomp5.dylib ~/code/libomp_oss/exports/mac_32e/lib.thin/libiomp5.dylib lib*
-#     install_name_tool -change libiomp5.dylib /opt/local/lib/libomp/libiomp5.dylib lib*
-# fi
-# #################################
+# python setup.py build_ext --inplace -- -DOpenCV_DIR=$HOME/code/opencv/build
+# python setup.py develop -- -DOpenCV_DIR=$HOME/code/opencv/build

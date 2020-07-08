@@ -7,10 +7,6 @@
 #include "CRForest-Detector-Class.hpp"
 #include "CRForest.h"
 
-// #include "opencv2/core/core.hpp"
-// #include "opencv2/highgui/highgui.hpp"
-// #include "opencv2/imgcodecs/imgcodecs.hpp"
-
 using namespace std;
 
 typedef unsigned char uint8;
@@ -33,7 +29,7 @@ PYTHON_RANDOM_FOREST CRForest *forest(CRForestDetectorClass *detector, char **tr
                                       bool quiet)
 {
     // Convert char* pointers to vector of strings for convenience
-    vector<string> tree_path_vector(_tree_path_num);
+    vector<std::string> tree_path_vector(_tree_path_num);
     for (int index = 0; index < _tree_path_num; ++index)
     {
         tree_path_vector[index] = tree_path_array[index];
@@ -60,14 +56,14 @@ PYTHON_RANDOM_FOREST void train(CRForestDetectorClass *detector, char *train_pos
     std::string trees_path_string          = trees_path;
 
     // Convert char* pointers to vector of strings for convenience
-    vector<string> train_pos_chip_filename_vector(_train_pos_chip_num);
+    vector<std::string> train_pos_chip_filename_vector(_train_pos_chip_num);
     for (int index = 0; index < _train_pos_chip_num; ++index)
     {
         train_pos_chip_filename_vector[index] = train_pos_chip_filename_array[index];
     }
 
     // Convert char* pointers to vector of strings for convenience
-    vector<string> train_neg_chip_filename_vector(_train_neg_chip_num);
+    vector<std::string> train_neg_chip_filename_vector(_train_neg_chip_num);
     for (int index = 0; index < _train_neg_chip_num; ++index)
     {
         train_neg_chip_filename_vector[index] = train_neg_chip_filename_array[index];

@@ -51,7 +51,7 @@ def test_pyrf():
     # =================================
 
     # Get input images
-    from wbia_vtool import image
+    from vtool import image
 
     big_gpath_list = utool.list_images(test_path, fullpath=True, recursive=False)
     print(big_gpath_list)

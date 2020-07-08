@@ -71,15 +71,11 @@
 #include <omp.h>
 #endif
 
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/imgcodecs/imgcodecs.hpp"
+#include <opencv/highgui.h>
 
 #include "CRForestDetector.h"
 
 using namespace std;
-using namespace cv;
 
 struct CRForestDetectorClass
 {
@@ -109,11 +105,11 @@ public:
     }
 
     // Init and start training
-    void train(std::string train_pos_chip_path_string,
+    void train(string train_pos_chip_path_string,
                vector<string> &train_pos_chip_filename_vector,
-               std::string train_neg_chip_path_string,
+               string train_neg_chip_path_string,
                vector<string> &train_neg_chip_filename_vector,
-               std::string trees_path_string, int patch_width, int patch_height,
+               string trees_path_string, int patch_width, int patch_height,
                float patch_density, int trees_num, int trees_offset,
                int trees_max_depth, int trees_max_patches,
                int trees_leaf_size, int trees_pixel_tests,
@@ -158,8 +154,8 @@ public:
     }
 
     // Run detector
-    int detect(CRForest *forest, std::string input_gpath, std::string output_gpath,
-               std::string output_scale_gpath, int mode, float sensitivity,
+    int detect(CRForest *forest, string input_gpath, string output_gpath,
+               string output_scale_gpath, int mode, float sensitivity,
                vector<float> &scale_vector, int nms_min_area_contour,
                int nms_min_area_overlap, float **results, int RESULT_LENGTH,
                bool serial, bool verbose, bool quiet)
@@ -169,7 +165,7 @@ public:
         // int threshold = int(255.0 * 0.90);
         bool debug_flag = true;
         int threshold = int(255 * 0.90);
-        // int accumulate_mode = 1; // 1 - max, 0 - add | 0 - hough, 1 - classification
+        int accumulate_mode = 1; // 1 - max, 0 - add | 0 - hough, 1 - classification
         float density = 0.990;
         verbose = true;
 
@@ -191,8 +187,7 @@ public:
         // <VECTOR> | scale | y | x | cvPoint
 
         // Load image and create temporary objects
-        cv::Mat img_mat = imread(input_gpath, CV_LOAD_IMAGE_COLOR);
-        IplImage* img = new IplImage(img_mat);
+        IplImage *img = cvLoadImage(input_gpath.c_str(), CV_LOAD_IMAGE_COLOR);
         #pragma omp critical(imageLoad)
         {
             if (!img)
@@ -214,9 +209,7 @@ public:
         IplImage *combinedMax = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_32F, 1);
         IplImage *upscaled = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_32F, 1);
         IplImage *output   = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_8U,  1);
-
-        cv::Mat debug_mat = imread(input_gpath, CV_LOAD_IMAGE_COLOR);
-        IplImage* debug = new IplImage(debug_mat);
+        IplImage *debug    = cvLoadImage(input_gpath.c_str(), CV_LOAD_IMAGE_COLOR);
 
         // Prepare scale_vector
         int w, h, k;
@@ -256,10 +249,7 @@ public:
                 cvConvertScale( vImgDetect[k], vImgDetect[k], sensitivity);
                 cvSmooth( vImgDetect[k], vImgDetect[k], CV_GAUSSIAN, 5);
                 sprintf(buffer, "%s_scaled_%0.02f.JPEG", output_scale_gpath.c_str(), scale_vector[k]);
-
-                cv::Mat temp_mat = cv::cvarrToMat(vImgDetect[k]);
-                cv::imwrite(buffer, temp_mat);
-                temp_mat.release();
+                cvSaveImage(buffer, vImgDetect[k]);
             }
             // Release images
             cvReleaseImage(&vImgDetect[k]);
@@ -308,15 +298,11 @@ public:
                 {
                     sprintf(buffer, "%s_debug_add.JPEG", output_gpath.c_str());
                     cvConvertScale( combinedAdd, combinedAdd, sensitivity / scale_vector.size() );
-                    cv::Mat combinedAdd_mat = cv::cvarrToMat(combinedAdd);
-                    cv::imwrite(buffer, combinedAdd_mat);
-                    combinedAdd_mat.release();
+                    cvSaveImage(buffer, combinedAdd);
 
                     sprintf(buffer, "%s_debug_max.JPEG", output_gpath.c_str());
                     cvConvertScale( combinedMax, combinedMax, sensitivity );
-                    cv::Mat combinedMax_mat = cv::cvarrToMat(combinedMax);
-                    cv::imwrite(buffer, combinedMax_mat);
-                    combinedMax_mat.release();
+                    cvSaveImage(buffer, combinedMax);
                 }
             }
 
@@ -334,9 +320,7 @@ public:
             if (output_gpath.length() > 0)
             {
                 // Save output mode image
-                cv::Mat output_mat = cv::cvarrToMat(output);
-                cv::imwrite(output_gpath.c_str(), output_mat);
-                output_mat.release();
+                cvSaveImage(output_gpath.c_str(), output);
             }
 
             // if (output_gpath.length() > 0)
@@ -345,10 +329,7 @@ public:
             //     cvSmooth( output, output, CV_GAUSSIAN, 5);
             //     // Save output mode image
             //     sprintf(buffer, "%s_dialate.JPEG", output_gpath.c_str());
-            //     cv::Mat output_mat = cv::cvarrToMat(output);
-            //     cv::imwrite(buffer, output_mat);
-            //     output_mat.release();
-            //
+            //     cvSaveImage(buffer, output);
             // }
 
             cvThreshold(output, output, threshold, 0, CV_THRESH_TOZERO);
@@ -359,9 +340,7 @@ public:
                 {
                     // Save output mode image
                     sprintf(buffer, "%s_debug_thresh.JPEG", output_gpath.c_str());
-                    cv::Mat output_mat = cv::cvarrToMat(output);
-                    cv::imwrite(buffer, output_mat);
-                    output_mat.release();
+                    cvSaveImage(buffer, output);
                 }
             }
 
@@ -633,9 +612,7 @@ public:
             if (output_gpath.length() > 0)
             {
                 // Save output mode image
-                cv::Mat output_mat = cv::cvarrToMat(output);
-                cv::imwrite(output_gpath.c_str(), output_mat);
-                output_mat.release();
+                cvSaveImage(output_gpath.c_str(), output);
             }
         }
 
@@ -647,14 +624,10 @@ public:
             if(output_gpath.length() > 0)
             {
                 sprintf(buffer, "%s_debug_original.JPEG", output_gpath.c_str());
-                cv::Mat img_mat = cv::cvarrToMat(img);
-                cv::imwrite(buffer, img_mat);
-                img_mat.release();
+                cvSaveImage(buffer, img);
 
                 sprintf(buffer, "%s_debug.JPEG", output_gpath.c_str());
-                cv::Mat debug_mat = cv::cvarrToMat(debug);
-                cv::imwrite(buffer, debug_mat);
-                debug_mat.release();
+                cvSaveImage(buffer, debug);
             }
         }
 
@@ -662,9 +635,6 @@ public:
         cvReleaseImage(&img);
         cvReleaseImage(&output);
         cvReleaseImage(&debug);
-
-        img_mat.release();
-        debug_mat.release();
 
         // Save results
         int size = temp.size();
@@ -682,11 +652,11 @@ public:
 
 private:
     // Extract patches from training data
-    int extract_Patches(CRPatch &Train, CvRNG *pRNG, std::string train_pos_chip_path_string,
+    int extract_Patches(CRPatch &Train, CvRNG *pRNG, string train_pos_chip_path_string,
                         vector<string> &train_pos_chip_filename_vector, int label,
                         float patch_density, int max_patches, bool verbose, bool quiet)
     {
-        std::string img_filepath;
+        string img_filepath;
         IplImage *img;
         int patch_total = 0;
         // load postive images and extract patches
@@ -708,8 +678,7 @@ private:
             // Get the image's filepah
             img_filepath = train_pos_chip_path_string + "/" + train_pos_chip_filename_vector[i];
             // Load image
-            cv::Mat img_mat = imread(img_filepath, CV_LOAD_IMAGE_COLOR);
-            img = new IplImage(img_mat);
+            img = cvLoadImage(img_filepath.c_str(), CV_LOAD_IMAGE_COLOR);
             if (!img)
             {
                 cout << endl << "[pyrf c++] Could not load image file: " << img_filepath;
@@ -719,7 +688,6 @@ private:
             patch_total += Train.extractPatches(img, patch_density, label);
             // Release image
             cvReleaseImage(&img);
-            img_mat.release();
         }
         return patch_total;
     }
