@@ -29,7 +29,7 @@ PYTHON_RANDOM_FOREST CRForest *forest(CRForestDetectorClass *detector, char **tr
                                       bool quiet)
 {
     // Convert char* pointers to vector of strings for convenience
-    vector<std::string> tree_path_vector(_tree_path_num);
+    vector<string> tree_path_vector(_tree_path_num);
     for (int index = 0; index < _tree_path_num; ++index)
     {
         tree_path_vector[index] = tree_path_array[index];
@@ -51,19 +51,19 @@ PYTHON_RANDOM_FOREST void train(CRForestDetectorClass *detector, char *train_pos
                                 bool quiet)
 {
     // Convert char* to nice strings, we are not Neanderthals
-    std::string train_pos_chip_path_string = train_pos_chip_path;
-    std::string train_neg_chip_path_string = train_neg_chip_path;
-    std::string trees_path_string          = trees_path;
+    string train_pos_chip_path_string = train_pos_chip_path;
+    string train_neg_chip_path_string = train_neg_chip_path;
+    string trees_path_string          = trees_path;
 
     // Convert char* pointers to vector of strings for convenience
-    vector<std::string> train_pos_chip_filename_vector(_train_pos_chip_num);
+    vector<string> train_pos_chip_filename_vector(_train_pos_chip_num);
     for (int index = 0; index < _train_pos_chip_num; ++index)
     {
         train_pos_chip_filename_vector[index] = train_pos_chip_filename_array[index];
     }
 
     // Convert char* pointers to vector of strings for convenience
-    vector<std::string> train_neg_chip_filename_vector(_train_neg_chip_num);
+    vector<string> train_neg_chip_filename_vector(_train_neg_chip_num);
     for (int index = 0; index < _train_neg_chip_num; ++index)
     {
         train_neg_chip_filename_vector[index] = train_neg_chip_filename_array[index];
@@ -111,9 +111,9 @@ PYTHON_RANDOM_FOREST void detect(CRForestDetectorClass *detector, CRForest *fore
     #pragma omp parallel for if(!serial)
     for (int index = 0; index < _input_gpath_num; ++index)
     {
-        std::string input_gpath = input_gpath_array[index];
-        std::string output_gpath = output_gpath_array[index];
-        std::string output_scale_gpath = output_scale_gpath_array[index];
+        string input_gpath = input_gpath_array[index];
+        string output_gpath = output_gpath_array[index];
+        string output_scale_gpath = output_scale_gpath_array[index];
         // Run detection
         int length = detector->detect(forest, input_gpath, output_gpath,
                                        output_scale_gpath, mode, sensitivity,

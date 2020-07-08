@@ -7,7 +7,8 @@
 
 #define _copysign copysign
 
-#include "opencv2/core/core.hpp"
+#include <opencv/cxcore.h>
+#include <opencv/cv.h>
 
 #include <vector>
 #include <iostream>

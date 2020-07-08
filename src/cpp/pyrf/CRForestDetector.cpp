@@ -14,8 +14,6 @@
 #include <omp.h>
 #endif
 
-#include "opencv2/imgproc.hpp"
-
 using namespace std;
 
 void CRForestDetector::detectColor(IplImage *img, IplImage *imgDetect,
