@@ -5,7 +5,9 @@ rm -rf _skbuild
 rm -rf pyrf/lib
 rm -rf dist
 rm -rf build
+rm -rf htmlcov
 rm -rf *.egg-info
+rm -rf pip-wheel-metadata
 
 rm -rf mb_work
 rm -rf wheelhouse

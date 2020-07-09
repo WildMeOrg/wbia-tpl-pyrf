@@ -166,6 +166,11 @@ NAME = 'wbia-pyrf'
 MB_PYTHON_TAG = native_mb_python_tag()  # NOQA
 
 AUTHORS = [
+    'Juergen Gall',
+    'Angela Yao',
+    'Numa Razavi',
+    'Luc Van Gool',
+    'Visctor Lempitsky',
     'Jason Parham',
     'Jon Crall',
     'Chuck Stewart',
