@@ -28,9 +28,7 @@ html_sidebars = {
 
 project = 'wbia-pydarknet'
 copyright = '2020, Wild Me'
-author = (
-    'Juergen Gall, Angela Yao, Numa Razavi, Luc Van Gool, Visctor Lempitsky, Jason Parham'
-)
+author = 'Juergen Gall, Angela Yao, Numa Razavi, Luc Van Gool, Visctor Lempitsky, Jason Parham, WildMe Developers'
 
 # The short X.Y version
 version = '3.0.0'
