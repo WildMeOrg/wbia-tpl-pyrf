@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 from os import mkdir
 from os.path import join, exists  # NOQA
-import cv2
 import random
 from pyrf import Random_Forest_Detector
 from wbia.detecttools.directory import Directory
 
 
 def _draw_box(img, annotation, xmin, ymin, xmax, ymax, color, stroke=2, top=True):
+    import cv2
     font = cv2.FONT_HERSHEY_SIMPLEX
     scale = 0.5
     width, height = cv2.getTextSize(annotation, font, scale, -1)[0]
@@ -22,6 +22,7 @@ def _draw_box(img, annotation, xmin, ymin, xmax, ymax, color, stroke=2, top=True
 
 
 def openImage(filename, color=False, alpha=False):
+    import cv2
     if not exists(filename):
         return None
 

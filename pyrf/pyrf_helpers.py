@@ -4,7 +4,6 @@
 # ============================
 from __future__ import absolute_import, division, print_function
 from os.path import join, realpath, dirname
-import cv2
 import random
 import numpy as np
 import ctypes as C
@@ -94,6 +93,8 @@ def _cache_data(src_path_list, dst_path, format_str='data_%07d.JPEG', **kwargs):
         chips_prob_flip_horizontally     (required)
         chips_prob_flip_vertically       (required)
     """
+    import cv2
+
     if kwargs['chips_norm_width'] is not None:
         kwargs['chips_norm_width'] = int(kwargs['chips_norm_width'])
     if kwargs['chips_norm_height'] is not None:
